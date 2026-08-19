@@ -1,1 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scenario Bot Builder</title>
+<style>
+:root{
+  --brand:#b91e71;
+  --brand-soft:#fce8f2;
+  --bg:#f5f6f8;
+  --panel:#ffffff;
+  --line:#d9dde3;
+  --text:#222;
+  --muted:#667085;
+  --danger:#b42318;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:18px 24px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:24px;color:var(--brand)}
+header p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.app{display:grid;grid-template-columns:minmax(420px,1fr) minmax(420px,1fr);gap:18px;padding:18px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);overflow:hidden}
+.panel-header{padding:16px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.panel-body{padding:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+input[type=text],input[type=number],textarea,select{width:100%;padding:11px 12px;border:1px solid #c9ced6;border-radius:8px;font:inherit;background:#fff}
+textarea{min-height:90px;resize:vertical}
+.inline{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.question-card{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:#fcfcfd;overflow:hidden}
+.question-card.open{box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.question-head{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#fff}
+.answer-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.question-toggle{flex:1;display:flex;align-items:center;gap:10px;padding:0;margin:0;background:transparent;border:0;text-align:left;box-shadow:none;font-weight:700;min-width:0}
+.question-toggle:hover{background:transparent;transform:none;box-shadow:none;border-color:transparent}
+.question-toggle:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
+.question-chevron{font-size:14px;transition:transform .18s ease;flex:0 0 auto}
+.question-card.open .question-chevron{transform:rotate(90deg)}
+.question-summary{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-weight:400;font-size:13px}
+.question-body{display:none;padding:0 14px 14px;border-top:1px solid var(--line)}
+.question-card.open .question-body{display:block}
+.result-editor{padding:14px 0;border-bottom:1px solid var(--line)}
+.result-editor:last-child{border-bottom:0}
+.question-title{font-weight:700}
+.answer-card{border-left:4px solid #d7dae0;padding:12px;background:#fff;border-radius:8px;margin:10px 0}
+.answer-card.correct{border-left-color:#12b76a}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button{border:0;border-radius:8px;padding:10px 13px;font:inherit;cursor:pointer;background:#e9ecef;color:#222}
+button.primary{background:var(--brand);color:#fff}
+button.secondary{background:#fff;border:1px solid var(--line)}
+button.danger{background:#fee4e2;color:var(--danger)}
+button.small{padding:7px 9px;font-size:13px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.preview-wrap{padding:18px;background:#eef1f4;min-height:720px}
+.preview-frame{width:100%;height:720px;border:0;background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.generator{margin-top:18px}
+.code-output{width:100%;height:260px;font-family:Consolas,monospace;font-size:12px;white-space:pre;overflow:auto}
+.notice{padding:10px 12px;background:#fff3f7;border-left:4px solid var(--brand);border-radius:6px;margin-bottom:14px;font-size:13px;color:#444}
+.checkbox{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:8px}
+hr{border:0;border-top:1px solid var(--line);margin:20px 0}
+@media (max-width: 980px){.app{grid-template-columns:1fr}.preview-wrap{min-height:600px}.preview-frame{height:600px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Scenario Bot Builder</h1>
+  <p>Create, preview and generate Rise-ready scenario bots without touching code.</p>
+</header>
 
+<div class="app">
+  <section class="panel">
+    <div class="panel-header">Scenario content</div>
+    <div class="panel-body">
+      <div class="notice">Edit the fields below, preview updates when you press <strong>Update Preview</strong>. Use <strong>Generate Rise Code</strong> when you are ready to copy the complete bot and paste in Rise code block.</div>
+
+      <div class="inline">
+        <div class="field">
+          <label for="organisation">Organisation label</label>
+          <input id="organisation" type="text" value="SAS">
+        </div>
+        <div class="field">
+          <label for="title">Scenario title</label>
+          <input id="title" type="text" value="Scenario">
+        </div>
+      </div>
+
+      <div class="inline">
+        <div class="field">
+          <label for="resultsHeading">Results heading</label>
+          <input id="resultsHeading" type="text" value="Scenario Outcome Review">
+        </div>
+        <div class="field">
+          <label for="restartText">Restart button text</label>
+          <input id="restartText" type="text" value="Restart Scenario">
+        </div>
+      </div>
+
+
+      <hr>
+      <div class="question-head">
+        <div class="question-title">Questions</div>
+        <button class="primary small" id="addQuestion">+ Add question</button>
+      </div>
+      <div id="questions"></div>
+
+      <hr>
+      <div class="question-card" id="performanceCard">
+        <div class="question-head">
+          <button class="question-toggle" type="button" id="performanceToggle" aria-expanded="false">
+            <span class="question-chevron" aria-hidden="true">▶</span>
+            <span>Final performance feedback</span>
+            <span class="question-summary">Strong, mixed and high-risk outcomes</span>
+          </button>
+        </div>
+        <div class="question-body">
+          <div style="margin-top:14px">
+
+      <div class="result-editor">
+        <div class="field">
+          <label>Strong result title</label>
+          <input id="strongTitle" type="text" value="Strong performance">
+        </div>
+        <div class="field">
+          <label>Strong result text</label>
+          <textarea id="strongText">Your decisions show a good understanding of the scenario and appropriate workplace response.</textarea>
+        </div>
+        <div class="field">
+          <label>Strong result bullets (one per line)</label>
+          <textarea id="strongBullets">effective risk identification\nappropriate control measures\nsafe incident response</textarea>
+        </div>
+      </div>
+
+      <div class="result-editor">
+        <div class="field">
+          <label>Mixed result title</label>
+          <input id="mixedTitle" type="text" value="Mixed outcome">
+        </div>
+        <div class="field">
+          <label>Mixed result text</label>
+          <textarea id="mixedText">You made several good decisions, however one or more choices introduced avoidable risk.</textarea>
+        </div>
+        <div class="field">
+          <label>Mixed result bullets (one per line)</label>
+          <textarea id="mixedBullets">some appropriate decisions\nareas requiring further consideration\npotential for inconsistent practice</textarea>
+        </div>
+      </div>
+
+      <div class="result-editor">
+        <div class="field">
+          <label>Weak result title</label>
+          <input id="weakTitle" type="text" value="High risk outcome">
+        </div>
+        <div class="field">
+          <label>Weak result text</label>
+          <textarea id="weakText">Multiple decisions did not align with the expected approach for this scenario.</textarea>
+        </div>
+        <div class="field">
+          <label>Weak result bullets (one per line)</label>
+          <textarea id="weakBullets">increased risk\ninappropriate controls\npotential negative consequences</textarea>
+        </div>
+      </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="secondary" id="refreshPreview">Update Preview</button>
+        <button class="primary" id="generateCode">Generate Rise Code</button>
+        <button class="secondary" id="copyCode">Copy Code</button>
+      </div>
+
+      <div class="generator">
+        <div class="field">
+          <label for="codeOutput">Generated Rise code</label>
+          <textarea id="codeOutput" class="code-output" spellcheck="false"></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">Live preview</div>
+    <div class="preview-wrap">
+      <iframe id="preview" class="preview-frame" title="Scenario bot preview"></iframe>
+    </div>
+  </section>
+</div>
+
+<script>
+const state = {
+  openQuestion: 0,
+  questions: [
+    {
+      question: "A new vehicle cleaning product has been procured.\n\nThe Health & Safety Officer is completing a COSHH assessment.\n\nWhat document must they use to identify hazards and controls?",
+      answers: [
+        { text: "Safety Data Sheet (SDS)", correct: true, feedbackTitle: "", feedbackText: "", bullets: "" },
+        { text: "A shopping list from procurement", correct: false, feedbackTitle: "Incorrect source used", feedbackText: "Using anything other than a Safety Data Sheet means hazard classification, PPE guidance and emergency controls may be missed.", bullets: "unsafe chemical handling\nincorrect PPE selection\nnon-compliant COSHH assessment" },
+        { text: "An email from a colleague guessing the risks", correct: false, feedbackTitle: "Unreliable information", feedbackText: "Informal advice is not a suitable replacement for approved safety information when assessing hazardous substances.", bullets: "" }
+      ]
+    },
+    {
+      question: "The SDS identifies the product as corrosive.\n\nWhat should be the FIRST control action?",
+      answers: [
+        { text: "Select appropriate PPE and safe handling controls", correct: true, feedbackTitle: "", feedbackText: "", bullets: "" },
+        { text: "Allow staff to use it without changes", correct: false, feedbackTitle: "Control failure risk", feedbackText: "Failing to apply appropriate controls would leave staff unprotected when handling a corrosive substance.", bullets: "chemical exposure\nworkplace injury\ninadequate COSHH controls" },
+        { text: "Assume low risk because it looks like water", correct: false, feedbackTitle: "Risk underestimation", feedbackText: "The appearance of a substance does not indicate how hazardous it may be. Controls should be based on the available safety information.", bullets: "" }
+      ]
+    },
+    {
+      question: "During use, a staff member gets the chemical on their skin.\n\nWhat is the correct immediate response?",
+      answers: [
+        { text: "Follow first aid guidance and rinse the affected area immediately", correct: true, feedbackTitle: "", feedbackText: "", bullets: "" },
+        { text: "Wait until shift end before acting", correct: false, feedbackTitle: "Delayed response", feedbackText: "Delaying first aid following chemical exposure can increase the severity of an injury.", bullets: "" },
+        { text: "Ignore it unless symptoms appear later", correct: false, feedbackTitle: "Exposure ignored", feedbackText: "Chemical exposure should be dealt with immediately using the first aid guidance provided for that substance.", bullets: "" }
+      ]
+    }
+  ]
+};
+
+const qWrap = document.getElementById('questions');
+const performanceCard = document.getElementById('performanceCard');
+const performanceToggle = document.getElementById('performanceToggle');
+performanceToggle.addEventListener('click', () => {
+  const isOpen = performanceCard.classList.toggle('open');
+  performanceToggle.setAttribute('aria-expanded', String(isOpen));
+});
+
+function escapeHtml(s=''){
+  return s.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+
+function renderQuestions(){
+  qWrap.innerHTML = '';
+  state.questions.forEach((q, qi) => {
+    const card = document.createElement('div');
+    card.className = 'question-card' + (state.openQuestion === qi ? ' open' : '');
+    const summary = (q.question || 'Untitled question').replace(/\s+/g,' ').trim();
+    card.innerHTML = `
+      <div class="question-head">
+        <button class="question-toggle" type="button" data-action="toggle-q" data-q="${qi}" aria-expanded="${state.openQuestion === qi}">
+          <span class="question-chevron" aria-hidden="true">▶</span>
+          <span>Question ${qi+1}</span>
+          <span class="question-summary">${escapeHtml(summary)}</span>
+        </button>
+        <div class="row">
+          <button class="secondary small" data-action="up-q" data-q="${qi}" title="Move question up">↑</button>
+          <button class="secondary small" data-action="down-q" data-q="${qi}" title="Move question down">↓</button>
+          <button class="danger small" data-action="delete-q" data-q="${qi}">Delete</button>
+        </div>
+      </div>
+      <div class="question-body">
+        <div class="field" style="margin-top:14px">
+          <label>Question text</label>
+          <textarea data-field="question" data-q="${qi}">${escapeHtml(q.question)}</textarea>
+        </div>
+        <div class="answer-list" id="answers-${qi}"></div>
+        <button class="secondary small" data-action="add-a" data-q="${qi}">+ Add answer</button>
+      </div>
+    `;
+    qWrap.appendChild(card);
+
+    const aWrap = card.querySelector(`#answers-${qi}`);
+    q.answers.forEach((a, ai) => {
+      const ac = document.createElement('div');
+      ac.className = 'answer-card' + (a.correct ? ' correct' : '');
+      ac.innerHTML = `
+        <div class="answer-head">
+          <strong>Answer ${ai+1}</strong>
+          <button class="danger small" data-action="delete-a" data-q="${qi}" data-a="${ai}">Delete</button>
+        </div>
+        <div class="field">
+          <label>Answer text</label>
+          <input type="text" data-field="answer-text" data-q="${qi}" data-a="${ai}" value="${escapeHtml(a.text)}">
+        </div>
+        <label class="checkbox">
+          <input type="checkbox" data-field="correct" data-q="${qi}" data-a="${ai}" ${a.correct ? 'checked' : ''}>
+          Correct answer
+        </label>
+        <div class="field" style="margin-top:10px">
+          <label>Consequence title (optional)</label>
+          <input type="text" data-field="feedback-title" data-q="${qi}" data-a="${ai}" value="${escapeHtml(a.feedbackTitle)}">
+        </div>
+        <div class="field">
+          <label>Consequence text (optional)</label>
+          <textarea data-field="feedback-text" data-q="${qi}" data-a="${ai}">${escapeHtml(a.feedbackText)}</textarea>
+        </div>
+        <div class="field">
+          <label>Consequence bullets (one per line, optional)</label>
+          <textarea data-field="bullets" data-q="${qi}" data-a="${ai}">${escapeHtml(a.bullets)}</textarea>
+        </div>
+      `;
+      aWrap.appendChild(ac);
+    });
+  });
+}
+
+qWrap.addEventListener('input', e => {
+  const t = e.target;
+  const qi = Number(t.dataset.q);
+  const ai = t.dataset.a === undefined ? null : Number(t.dataset.a);
+  const f = t.dataset.field;
+  if (Number.isNaN(qi) || !f) return;
+  if (f === 'question') state.questions[qi].question = t.value;
+  else if (ai !== null) {
+    const a = state.questions[qi].answers[ai];
+    if (f === 'answer-text') a.text = t.value;
+    if (f === 'feedback-title') a.feedbackTitle = t.value;
+    if (f === 'feedback-text') a.feedbackText = t.value;
+    if (f === 'bullets') a.bullets = t.value;
+    if (f === 'correct') a.correct = t.checked;
+  }
+});
+qWrap.addEventListener('change', e => e.target.dispatchEvent(new Event('input',{bubbles:true})));
+
+qWrap.addEventListener('click', e => {
+  const b = e.target.closest('button[data-action]');
+  if (!b) return;
+  const qi = Number(b.dataset.q);
+  const ai = b.dataset.a === undefined ? null : Number(b.dataset.a);
+  const action = b.dataset.action;
+  if (action === 'toggle-q') {
+    state.openQuestion = state.openQuestion === qi ? null : qi;
+    renderQuestions();
+    return;
+  }
+  if (action === 'add-a') {
+    state.questions[qi].answers.push({text:'',correct:false,feedbackTitle:'',feedbackText:'',bullets:''});
+    state.openQuestion = qi;
+  }
+  if (action === 'delete-a' && state.questions[qi].answers.length > 1) state.questions[qi].answers.splice(ai,1);
+  if (action === 'delete-q' && state.questions.length > 1) {
+    state.questions.splice(qi,1);
+    if (state.openQuestion === qi) state.openQuestion = Math.min(qi, state.questions.length - 1);
+    else if (state.openQuestion !== null && state.openQuestion > qi) state.openQuestion--;
+  }
+  if (action === 'up-q' && qi > 0) {
+    [state.questions[qi-1],state.questions[qi]]=[state.questions[qi],state.questions[qi-1]];
+    state.openQuestion = qi - 1;
+  }
+  if (action === 'down-q' && qi < state.questions.length-1) {
+    [state.questions[qi+1],state.questions[qi]]=[state.questions[qi],state.questions[qi+1]];
+    state.openQuestion = qi + 1;
+  }
+  renderQuestions();
+});
+
+document.getElementById('addQuestion').addEventListener('click', () => {
+  state.questions.push({question:'',answers:[
+    {text:'',correct:true,feedbackTitle:'',feedbackText:'',bullets:''},
+    {text:'',correct:false,feedbackTitle:'',feedbackText:'',bullets:''}
+  ]});
+  state.openQuestion = state.questions.length - 1;
+  renderQuestions();
+});
+
+function linesToArray(text){
+  return text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+}
+
+function getScenario(){
+  return {
+    organisation: document.getElementById('organisation').value.trim(),
+    title: document.getElementById('title').value.trim(),
+    resultsHeading: document.getElementById('resultsHeading').value.trim(),
+    typingText: 'Typing...',
+    typingDelay: 700,
+    restartButtonText: document.getElementById('restartText').value.trim(),
+    questions: state.questions.map(q => ({
+      question: q.question,
+      answers: q.answers.map(a => {
+        const out = {text:a.text, correct:!!a.correct};
+        if (a.feedbackTitle || a.feedbackText || a.bullets.trim()) {
+          out.feedback = {
+            icon: a.correct ? '✅' : '⚠️',
+            title: a.feedbackTitle || (a.correct ? 'Good decision' : 'Impact of this decision'),
+            text: a.feedbackText,
+            bullets: linesToArray(a.bullets)
+          };
+        }
+        return out;
+      })
+    })),
+    results: [
+      {minScore:1,icon:'✅',title:document.getElementById('strongTitle').value.trim(),text:document.getElementById('strongText').value.trim(),bullets:linesToArray(document.getElementById('strongBullets').value)},
+      {minScore:0.67,icon:'⚠️',title:document.getElementById('mixedTitle').value.trim(),text:document.getElementById('mixedText').value.trim(),bullets:linesToArray(document.getElementById('mixedBullets').value)},
+      {minScore:0,icon:'❌',title:document.getElementById('weakTitle').value.trim(),text:document.getElementById('weakText').value.trim(),bullets:linesToArray(document.getElementById('weakBullets').value)}
+    ]
+  };
+}
+
+function makeBotCode(s){
+const safe = JSON.stringify(s).replace(/<\//g,'<\\/');
+return `<div id="chatbox">
+  <div id="progressContainer"><div id="progressBar"></div></div>
+  <div id="progressText"></div>
+  <div id="sectionHeader" class="section-header"></div>
+  <div id="messages"></div>
+  <div id="controls" class="buttons"></div>
+</div>
+
+<style>
+:root{--scenario-brand:#b91e71;--scenario-soft:#FCE8F2;}
+body{font-family:Arial,sans-serif;font-size:18px;background:#fff;padding:10px;margin:0;}
+#chatbox{background:white;max-width:750px;min-height:620px;margin:auto;padding:15px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.2);box-sizing:border-box;}
+.message{margin:10px 0;padding:15px;border-radius:8px;line-height:1.5;}
+.bot{background:var(--scenario-soft);margin-right:10%;white-space:pre-line;}
+.user{background:#e9ecef;margin-left:45%;text-align:center;}
+button{display:block;width:100%;text-align:left;padding:18px;margin:12px 0;background:white;border:2px solid #e5e5e5;border-radius:10px;color:#333;font-size:15px;line-height:1.45;transition:all .22s ease;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.05);}
+button:hover{border-color:var(--scenario-brand);background:#f8f9fa;transform:translateY(-2px);box-shadow:0 8px 8px rgba(0,0,0,.05);}
+button:focus-visible{outline:3px solid #333;outline-offset:3px;}
+button:active{transform:scale(.98);}
+.typing{font-style:italic;color:#666;animation:blink .5s infinite;}
+@keyframes blink{50%{opacity:.3;}}
+.section-header{margin-bottom:12px;padding:10px;background:#fff;color:#555;font-size:26px;}
+#progressContainer{width:100%;background:#e9ecef;border-radius:10px;overflow:hidden;margin-bottom:8px;}
+#progressBar{height:10px;width:0%;background:var(--scenario-brand);transition:.4s;}
+#progressText{text-align:right;font-size:13px;margin-bottom:10px;color:#555;}
+.feedback-screen{min-height:100%;display:flex;flex-direction:column;justify-content:flex-start;}
+.feedback{border-left:5px solid var(--scenario-brand);padding-left:16px;}
+.feedback h3{color:var(--scenario-brand);}
+.answer-summary{margin-bottom:18px;}
+.consequence-card{margin:18px 0;padding:16px;background:#f8f9fa;border-radius:10px;border-left:5px solid var(--scenario-brand);}
+.result-card{margin-top:20px;padding:18px;background:#fff3f7;border:2px solid var(--scenario-brand);border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.08);}
+.restart-button{margin-top:24px;text-align:center;}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+const scenario=${safe};
+let step=0,answers=[];
+const chatbox=document.getElementById("chatbox"),messages=document.getElementById("messages"),controls=document.getElementById("controls"),progressBar=document.getElementById("progressBar"),progressText=document.getElementById("progressText"),sectionHeader=document.getElementById("sectionHeader");
+function setScenarioHeading(){sectionHeader.textContent="";if(scenario.organisation){const strong=document.createElement("strong");strong.textContent=scenario.organisation;sectionHeader.appendChild(strong);sectionHeader.appendChild(document.createTextNode(" "+scenario.title));}else sectionHeader.textContent=scenario.title;}
+function updateProgress(){const total=scenario.questions.length;if(step>=total){progressBar.style.width="100%";progressText.textContent="Completed "+total+" of "+total;return;}progressBar.style.width=((step/total)*100)+"%";progressText.textContent="Question "+(step+1)+" of "+total;}
+function appendMessage(content,type){const div=document.createElement("div");div.className="message "+type;div.textContent=content;messages.appendChild(div);div.scrollIntoView({behavior:"smooth",block:"nearest"});}
+function showTyping(){const typing=document.createElement("div");typing.className="message bot typing";typing.textContent=scenario.typingText||"Typing...";messages.appendChild(typing);return new Promise(resolve=>setTimeout(()=>{typing.remove();resolve();},scenario.typingDelay||0));}
+async function askQuestion(){controls.innerHTML="";updateProgress();if(step>=scenario.questions.length){await showFeedback();return;}await showTyping();const current=scenario.questions[step];appendMessage(current.question,"bot");current.answers.forEach(answer=>{const button=document.createElement("button");button.type="button";button.textContent=answer.text;button.addEventListener("click",()=>selectAnswer(answer));controls.appendChild(button);});}
+async function selectAnswer(answer){const current=scenario.questions[step];appendMessage(answer.text,"user");answers.push({question:current.question,selected:answer.text,correct:Boolean(answer.correct),feedback:answer.feedback||null});step++;await askQuestion();}
+function calculateScore(){if(!answers.length)return 0;return answers.filter(a=>a.correct).length/answers.length;}
+function getResult(score){return [...scenario.results].sort((a,b)=>b.minScore-a.minScore).find(r=>score>=r.minScore)||scenario.results[scenario.results.length-1];}
+function createBulletList(items){if(!items||!items.length)return null;const ul=document.createElement("ul");items.forEach(item=>{const li=document.createElement("li");li.textContent=item;ul.appendChild(li);});return ul;}
+async function showFeedback(){controls.innerHTML="";progressBar.style.width="100%";await showTyping();chatbox.innerHTML="";const screen=document.createElement("div");screen.className="feedback-screen";const fc=document.createElement("div");fc.className="feedback";const h=document.createElement("h3");h.textContent=scenario.resultsHeading||"Scenario Outcome Review";fc.appendChild(h);const sh=document.createElement("h4");sh.textContent="Your decisions";fc.appendChild(sh);answers.forEach((a,i)=>{const s=document.createElement("div");s.className="answer-summary";const st=document.createElement("strong");st.textContent="Question "+(i+1);const ch=document.createElement("div");ch.textContent="You chose: "+a.selected;s.appendChild(st);s.appendChild(document.createElement("br"));s.appendChild(ch);fc.appendChild(s);});const fbs=answers.filter(a=>a.feedback);if(fbs.length){const ch=document.createElement("h4");ch.textContent="Impact of your decisions";fc.appendChild(ch);fbs.forEach(a=>{const d=a.feedback,card=document.createElement("div");card.className="consequence-card";const t=document.createElement("strong");t.textContent=((d.icon||"")+" "+(d.title||"")).trim();card.appendChild(t);if(d.text){const p=document.createElement("p");p.textContent=d.text;card.appendChild(p);}const list=createBulletList(d.bullets);if(list)card.appendChild(list);fc.appendChild(card);});}const result=getResult(calculateScore()),rc=document.createElement("div");rc.className="result-card";const rt=document.createElement("strong");rt.textContent=((result.icon||"")+" "+(result.title||"")).trim();rc.appendChild(rt);if(result.text){const p=document.createElement("p");p.textContent=result.text;rc.appendChild(p);}const rl=createBulletList(result.bullets);if(rl)rc.appendChild(rl);fc.appendChild(rc);const restart=document.createElement("button");restart.type="button";restart.className="restart-button";restart.textContent=scenario.restartButtonText||"Restart Scenario";restart.addEventListener("click",()=>location.reload());screen.appendChild(fc);screen.appendChild(restart);chatbox.appendChild(screen);}
+setScenarioHeading();askQuestion();
+});
+<\/script>`;
+}
+
+function refreshPreview(){
+  const code = makeBotCode(getScenario());
+  document.getElementById('preview').srcdoc = code;
+}
+
+document.getElementById('refreshPreview').addEventListener('click', refreshPreview);
+document.getElementById('generateCode').addEventListener('click', () => {
+  const code = makeBotCode(getScenario());
+  document.getElementById('codeOutput').value = code;
+});
+document.getElementById('copyCode').addEventListener('click', async () => {
+  const box = document.getElementById('codeOutput');
+  if (!box.value) box.value = makeBotCode(getScenario());
+  try {
+    await navigator.clipboard.writeText(box.value);
+    const btn = document.getElementById('copyCode');
+    const old = btn.textContent; btn.textContent = 'Copied';
+    setTimeout(()=>btn.textContent=old,1200);
+  } catch {
+    box.focus(); box.select(); document.execCommand('copy');
+  }
+});
+
+renderQuestions();
+refreshPreview();
+</script>
+</body>
+</html>
