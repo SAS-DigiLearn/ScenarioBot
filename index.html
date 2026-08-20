@@ -198,7 +198,7 @@ const state = {
     {
       question: "A new vehicle cleaning product has been procured.\n\nThe Health & Safety Officer is completing a COSHH assessment.\n\nWhat document must they use to identify hazards and controls?",
       answers: [
-        { text: "Safety Data Sheet (SDS)", correct: true, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
+        { text: "Safety Data Sheet (SDS)", correct: false, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
         { text: "A shopping list from procurement", correct: false, severity: "significant", feedbackTitle: "Incorrect source used", feedbackText: "Using anything other than a Safety Data Sheet means hazard classification, PPE guidance and emergency controls may be missed.", bullets: "unsafe chemical handling\nincorrect PPE selection\nnon-compliant COSHH assessment" },
         { text: "An email from a colleague guessing the risks", correct: false, severity: "significant", feedbackTitle: "Unreliable information", feedbackText: "Informal advice is not a suitable replacement for approved safety information when assessing hazardous substances.", bullets: "" }
       ]
@@ -206,7 +206,7 @@ const state = {
     {
       question: "The SDS identifies the product as corrosive.\n\nWhat should be the FIRST control action?",
       answers: [
-        { text: "Select appropriate PPE and safe handling controls", correct: true, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
+        { text: "Select appropriate PPE and safe handling controls", correct: false, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
         { text: "Allow staff to use it without changes", correct: false, severity: "critical", feedbackTitle: "Control failure risk", feedbackText: "Failing to apply appropriate controls would leave staff unprotected when handling a corrosive substance.", bullets: "chemical exposure\nworkplace injury\ninadequate COSHH controls" },
         { text: "Assume low risk because it looks like water", correct: false, severity: "significant", feedbackTitle: "Risk underestimation", feedbackText: "The appearance of a substance does not indicate how hazardous it may be. Controls should be based on the available safety information.", bullets: "" }
       ]
@@ -214,7 +214,7 @@ const state = {
     {
       question: "During use, a staff member gets the chemical on their skin.\n\nWhat is the correct immediate response?",
       answers: [
-        { text: "Follow first aid guidance and rinse the affected area immediately", correct: true, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
+        { text: "Follow first aid guidance and rinse the affected area immediately", correct: false, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
         { text: "Wait until shift end before acting", correct: false, severity: "critical", feedbackTitle: "Delayed response", feedbackText: "Delaying first aid following chemical exposure can increase the severity of an injury.", bullets: "" },
         { text: "Ignore it unless symptoms appear later", correct: false, severity: "critical", feedbackTitle: "Exposure ignored", feedbackText: "Chemical exposure should be dealt with immediately using the first aid guidance provided for that substance.", bullets: "" }
       ]
