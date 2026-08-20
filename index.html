@@ -104,7 +104,7 @@ hr{border:0;border-top:1px solid var(--line);margin:20px 0}
         <button class="primary small" id="addQuestion">+ Add question</button>
       </div>
        <div class="panel-body">
-      <div class="notice"><strong>NOTE:</strong> Add at least <strong>3 questions </strong>to generate a valid score in the performance review section.</div>
+      <div class="notice"><strong>NOTE:</strong> Results are based on both overall performance and the severity of decisions. A single critical mistake can trigger a high-risk outcome.</div>
       <div id="questions"></div>
 
       <hr>
@@ -198,25 +198,25 @@ const state = {
     {
       question: "A new vehicle cleaning product has been procured.\n\nThe Health & Safety Officer is completing a COSHH assessment.\n\nWhat document must they use to identify hazards and controls?",
       answers: [
-        { text: "Safety Data Sheet (SDS)", correct: true, feedbackTitle: "", feedbackText: "", bullets: "" },
-        { text: "A shopping list from procurement", correct: false, feedbackTitle: "Incorrect source used", feedbackText: "Using anything other than a Safety Data Sheet means hazard classification, PPE guidance and emergency controls may be missed.", bullets: "unsafe chemical handling\nincorrect PPE selection\nnon-compliant COSHH assessment" },
-        { text: "An email from a colleague guessing the risks", correct: false, feedbackTitle: "Unreliable information", feedbackText: "Informal advice is not a suitable replacement for approved safety information when assessing hazardous substances.", bullets: "" }
+        { text: "Safety Data Sheet (SDS)", correct: true, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
+        { text: "A shopping list from procurement", correct: false, severity: "significant", feedbackTitle: "Incorrect source used", feedbackText: "Using anything other than a Safety Data Sheet means hazard classification, PPE guidance and emergency controls may be missed.", bullets: "unsafe chemical handling\nincorrect PPE selection\nnon-compliant COSHH assessment" },
+        { text: "An email from a colleague guessing the risks", correct: false, severity: "significant", feedbackTitle: "Unreliable information", feedbackText: "Informal advice is not a suitable replacement for approved safety information when assessing hazardous substances.", bullets: "" }
       ]
     },
     {
       question: "The SDS identifies the product as corrosive.\n\nWhat should be the FIRST control action?",
       answers: [
-        { text: "Select appropriate PPE and safe handling controls", correct: true, feedbackTitle: "", feedbackText: "", bullets: "" },
-        { text: "Allow staff to use it without changes", correct: false, feedbackTitle: "Control failure risk", feedbackText: "Failing to apply appropriate controls would leave staff unprotected when handling a corrosive substance.", bullets: "chemical exposure\nworkplace injury\ninadequate COSHH controls" },
-        { text: "Assume low risk because it looks like water", correct: false, feedbackTitle: "Risk underestimation", feedbackText: "The appearance of a substance does not indicate how hazardous it may be. Controls should be based on the available safety information.", bullets: "" }
+        { text: "Select appropriate PPE and safe handling controls", correct: true, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
+        { text: "Allow staff to use it without changes", correct: false, severity: "critical", feedbackTitle: "Control failure risk", feedbackText: "Failing to apply appropriate controls would leave staff unprotected when handling a corrosive substance.", bullets: "chemical exposure\nworkplace injury\ninadequate COSHH controls" },
+        { text: "Assume low risk because it looks like water", correct: false, severity: "significant", feedbackTitle: "Risk underestimation", feedbackText: "The appearance of a substance does not indicate how hazardous it may be. Controls should be based on the available safety information.", bullets: "" }
       ]
     },
     {
       question: "During use, a staff member gets the chemical on their skin.\n\nWhat is the correct immediate response?",
       answers: [
-        { text: "Follow first aid guidance and rinse the affected area immediately", correct: true, feedbackTitle: "", feedbackText: "", bullets: "" },
-        { text: "Wait until shift end before acting", correct: false, feedbackTitle: "Delayed response", feedbackText: "Delaying first aid following chemical exposure can increase the severity of an injury.", bullets: "" },
-        { text: "Ignore it unless symptoms appear later", correct: false, feedbackTitle: "Exposure ignored", feedbackText: "Chemical exposure should be dealt with immediately using the first aid guidance provided for that substance.", bullets: "" }
+        { text: "Follow first aid guidance and rinse the affected area immediately", correct: true, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
+        { text: "Wait until shift end before acting", correct: false, severity: "critical", feedbackTitle: "Delayed response", feedbackText: "Delaying first aid following chemical exposure can increase the severity of an injury.", bullets: "" },
+        { text: "Ignore it unless symptoms appear later", correct: false, severity: "critical", feedbackTitle: "Exposure ignored", feedbackText: "Chemical exposure should be dealt with immediately using the first aid guidance provided for that substance.", bullets: "" }
       ]
     }
   ]
@@ -282,6 +282,14 @@ function renderQuestions(){
           Correct answer
         </label>
         <div class="field" style="margin-top:10px">
+          <label>Consequence severity</label>
+          <select data-field="severity" data-q="${qi}" data-a="${ai}" ${a.correct ? 'disabled' : ''}>
+            <option value="minor" ${a.severity === 'minor' ? 'selected' : ''}>Minor</option>
+            <option value="significant" ${a.severity === 'significant' ? 'selected' : ''}>Significant</option>
+            <option value="critical" ${a.severity === 'critical' ? 'selected' : ''}>Critical</option>
+          </select>
+        </div>
+        <div class="field">
           <label>Consequence title (optional)</label>
           <input type="text" data-field="feedback-title" data-q="${qi}" data-a="${ai}" value="${escapeHtml(a.feedbackTitle)}">
         </div>
@@ -313,6 +321,7 @@ qWrap.addEventListener('input', e => {
     if (f === 'feedback-text') a.feedbackText = t.value;
     if (f === 'bullets') a.bullets = t.value;
     if (f === 'correct') a.correct = t.checked;
+    if (f === 'severity') a.severity = t.value;
   }
 });
 qWrap.addEventListener('change', e => e.target.dispatchEvent(new Event('input',{bubbles:true})));
@@ -329,7 +338,7 @@ qWrap.addEventListener('click', e => {
     return;
   }
   if (action === 'add-a') {
-    state.questions[qi].answers.push({text:'',correct:false,feedbackTitle:'',feedbackText:'',bullets:''});
+    state.questions[qi].answers.push({text:'',correct:false,severity:'minor',feedbackTitle:'',feedbackText:'',bullets:''});
     state.openQuestion = qi;
   }
   if (action === 'delete-a' && state.questions[qi].answers.length > 1) state.questions[qi].answers.splice(ai,1);
@@ -351,8 +360,8 @@ qWrap.addEventListener('click', e => {
 
 document.getElementById('addQuestion').addEventListener('click', () => {
   state.questions.push({question:'',answers:[
-    {text:'',correct:true,feedbackTitle:'',feedbackText:'',bullets:''},
-    {text:'',correct:false,feedbackTitle:'',feedbackText:'',bullets:''}
+    {text:'',correct:true,severity:'minor',feedbackTitle:'',feedbackText:'',bullets:''},
+    {text:'',correct:false,severity:'minor',feedbackTitle:'',feedbackText:'',bullets:''}
   ]});
   state.openQuestion = state.questions.length - 1;
   renderQuestions();
@@ -373,7 +382,7 @@ function getScenario(){
     questions: state.questions.map(q => ({
       question: q.question,
       answers: q.answers.map(a => {
-        const out = {text:a.text, correct:!!a.correct};
+        const out = {text:a.text, correct:!!a.correct, severity:a.correct ? null : (a.severity || 'minor')};
         if (a.feedbackTitle || a.feedbackText || a.bullets.trim()) {
           out.feedback = {
             icon: a.correct ? '✅' : '⚠️',
@@ -386,9 +395,9 @@ function getScenario(){
       })
     })),
     results: [
-      {minScore:1,icon:'✅',title:document.getElementById('strongTitle').value.trim(),text:document.getElementById('strongText').value.trim(),bullets:linesToArray(document.getElementById('strongBullets').value)},
-      {minScore:0.67,icon:'⚠️',title:document.getElementById('mixedTitle').value.trim(),text:document.getElementById('mixedText').value.trim(),bullets:linesToArray(document.getElementById('mixedBullets').value)},
-      {minScore:0,icon:'❌',title:document.getElementById('weakTitle').value.trim(),text:document.getElementById('weakText').value.trim(),bullets:linesToArray(document.getElementById('weakBullets').value)}
+      {level:'strong',icon:'✅',title:document.getElementById('strongTitle').value.trim(),text:document.getElementById('strongText').value.trim(),bullets:linesToArray(document.getElementById('strongBullets').value)},
+      {level:'mixed',icon:'⚠️',title:document.getElementById('mixedTitle').value.trim(),text:document.getElementById('mixedText').value.trim(),bullets:linesToArray(document.getElementById('mixedBullets').value)},
+      {level:'weak',icon:'❌',title:document.getElementById('weakTitle').value.trim(),text:document.getElementById('weakText').value.trim(),bullets:linesToArray(document.getElementById('weakBullets').value)}
     ]
   };
 }
@@ -439,11 +448,25 @@ function updateProgress(){const total=scenario.questions.length;if(step>=total){
 function appendMessage(content,type){const div=document.createElement("div");div.className="message "+type;div.textContent=content;messages.appendChild(div);div.scrollIntoView({behavior:"smooth",block:"nearest"});}
 function showTyping(){const typing=document.createElement("div");typing.className="message bot typing";typing.textContent=scenario.typingText||"Typing...";messages.appendChild(typing);return new Promise(resolve=>setTimeout(()=>{typing.remove();resolve();},scenario.typingDelay||0));}
 async function askQuestion(){controls.innerHTML="";updateProgress();if(step>=scenario.questions.length){await showFeedback();return;}await showTyping();const current=scenario.questions[step];appendMessage(current.question,"bot");current.answers.forEach(answer=>{const button=document.createElement("button");button.type="button";button.textContent=answer.text;button.addEventListener("click",()=>selectAnswer(answer));controls.appendChild(button);});}
-async function selectAnswer(answer){const current=scenario.questions[step];appendMessage(answer.text,"user");answers.push({question:current.question,selected:answer.text,correct:Boolean(answer.correct),feedback:answer.feedback||null});step++;await askQuestion();}
+async function selectAnswer(answer){const current=scenario.questions[step];appendMessage(answer.text,"user");answers.push({question:current.question,selected:answer.text,correct:Boolean(answer.correct),severity:answer.correct ? null : (answer.severity || "minor"),feedback:answer.feedback||null});step++;await askQuestion();}
 function calculateScore(){if(!answers.length)return 0;return answers.filter(a=>a.correct).length/answers.length;}
-function getResult(score){return [...scenario.results].sort((a,b)=>b.minScore-a.minScore).find(r=>score>=r.minScore)||scenario.results[scenario.results.length-1];}
+function getDecisionSummary(){
+  return {
+    score: calculateScore(),
+    minor: answers.filter(a=>!a.correct && a.severity==="minor").length,
+    significant: answers.filter(a=>!a.correct && a.severity==="significant").length,
+    critical: answers.filter(a=>!a.correct && a.severity==="critical").length
+  };
+}
+function getResult(){
+  const d=getDecisionSummary();
+  if(d.critical>0) return scenario.results.find(r=>r.level==="weak") || scenario.results[2];
+  if(d.significant>=2) return scenario.results.find(r=>r.level==="weak") || scenario.results[2];
+  if(d.significant===1 || d.minor>=2) return scenario.results.find(r=>r.level==="mixed") || scenario.results[1];
+  return scenario.results.find(r=>r.level==="strong") || scenario.results[0];
+}
 function createBulletList(items){if(!items||!items.length)return null;const ul=document.createElement("ul");items.forEach(item=>{const li=document.createElement("li");li.textContent=item;ul.appendChild(li);});return ul;}
-async function showFeedback(){controls.innerHTML="";progressBar.style.width="100%";await showTyping();chatbox.innerHTML="";const screen=document.createElement("div");screen.className="feedback-screen";const fc=document.createElement("div");fc.className="feedback";const h=document.createElement("h3");h.textContent=scenario.resultsHeading||"Scenario Outcome Review";fc.appendChild(h);const sh=document.createElement("h4");sh.textContent="Your decisions";fc.appendChild(sh);answers.forEach((a,i)=>{const s=document.createElement("div");s.className="answer-summary";const st=document.createElement("strong");st.textContent="Question "+(i+1);const ch=document.createElement("div");ch.textContent="You chose: "+a.selected;s.appendChild(st);s.appendChild(document.createElement("br"));s.appendChild(ch);fc.appendChild(s);});const fbs=answers.filter(a=>a.feedback);if(fbs.length){const ch=document.createElement("h4");ch.textContent="Impact of your decisions";fc.appendChild(ch);fbs.forEach(a=>{const d=a.feedback,card=document.createElement("div");card.className="consequence-card";const t=document.createElement("strong");t.textContent=((d.icon||"")+" "+(d.title||"")).trim();card.appendChild(t);if(d.text){const p=document.createElement("p");p.textContent=d.text;card.appendChild(p);}const list=createBulletList(d.bullets);if(list)card.appendChild(list);fc.appendChild(card);});}const result=getResult(calculateScore()),rc=document.createElement("div");rc.className="result-card";const rt=document.createElement("strong");rt.textContent=((result.icon||"")+" "+(result.title||"")).trim();rc.appendChild(rt);if(result.text){const p=document.createElement("p");p.textContent=result.text;rc.appendChild(p);}const rl=createBulletList(result.bullets);if(rl)rc.appendChild(rl);fc.appendChild(rc);const restart=document.createElement("button");restart.type="button";restart.className="restart-button";restart.textContent=scenario.restartButtonText||"Restart Scenario";restart.addEventListener("click",()=>location.reload());screen.appendChild(fc);screen.appendChild(restart);chatbox.appendChild(screen);}
+async function showFeedback(){controls.innerHTML="";progressBar.style.width="100%";await showTyping();chatbox.innerHTML="";const screen=document.createElement("div");screen.className="feedback-screen";const fc=document.createElement("div");fc.className="feedback";const h=document.createElement("h3");h.textContent=scenario.resultsHeading||"Scenario Outcome Review";fc.appendChild(h);const sh=document.createElement("h4");sh.textContent="Your decisions";fc.appendChild(sh);answers.forEach((a,i)=>{const s=document.createElement("div");s.className="answer-summary";const st=document.createElement("strong");st.textContent="Question "+(i+1);const ch=document.createElement("div");ch.textContent="You chose: "+a.selected;s.appendChild(st);s.appendChild(document.createElement("br"));s.appendChild(ch);fc.appendChild(s);});const fbs=answers.filter(a=>a.feedback);if(fbs.length){const ch=document.createElement("h4");ch.textContent="Impact of your decisions";fc.appendChild(ch);fbs.forEach(a=>{const d=a.feedback,card=document.createElement("div");card.className="consequence-card";const t=document.createElement("strong");t.textContent=((d.icon||"")+" "+(d.title||"")).trim();card.appendChild(t);if(d.text){const p=document.createElement("p");p.textContent=d.text;card.appendChild(p);}const list=createBulletList(d.bullets);if(list)card.appendChild(list);fc.appendChild(card);});}const result=getResult(),rc=document.createElement("div");rc.className="result-card";const rt=document.createElement("strong");rt.textContent=((result.icon||"")+" "+(result.title||"")).trim();rc.appendChild(rt);if(result.text){const p=document.createElement("p");p.textContent=result.text;rc.appendChild(p);}const rl=createBulletList(result.bullets);if(rl)rc.appendChild(rl);fc.appendChild(rc);const restart=document.createElement("button");restart.type="button";restart.className="restart-button";restart.textContent=scenario.restartButtonText||"Restart Scenario";restart.addEventListener("click",()=>location.reload());screen.appendChild(fc);screen.appendChild(restart);chatbox.appendChild(screen);}
 setScenarioHeading();askQuestion();
 });
 <\/script>`;
