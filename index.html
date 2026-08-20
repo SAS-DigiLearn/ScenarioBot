@@ -360,7 +360,7 @@ qWrap.addEventListener('click', e => {
 
 document.getElementById('addQuestion').addEventListener('click', () => {
   state.questions.push({question:'',answers:[
-    {text:'',correct:true,severity:'minor',feedbackTitle:'',feedbackText:'',bullets:''},
+    {text:'',correct:false,severity:'minor',feedbackTitle:'',feedbackText:'',bullets:''},
     {text:'',correct:false,severity:'minor',feedbackTitle:'',feedbackText:'',bullets:''}
   ]});
   state.openQuestion = state.questions.length - 1;
