@@ -78,22 +78,22 @@ hr{border:0;border-top:1px solid var(--line);margin:20px 0}
       <div class="inline">
         <div class="field">
           <label for="organisation">Organisation label</label>
-          <input id="organisation" type="text" value="SAS">
+          <input id="organisation" type="text" placeholder="e.g. SAS">
         </div>
         <div class="field">
           <label for="title">Scenario title</label>
-          <input id="title" type="text" value="Scenario">
+          <input id="title" type="text" placeholder="e.g. COSHH Scenario">
         </div>
       </div>
 
       <div class="inline">
         <div class="field">
           <label for="resultsHeading">Results heading</label>
-          <input id="resultsHeading" type="text" value="Scenario Outcome Review">
+          <input id="resultsHeading" type="text" placeholder="e.g. Scenario Outcome Review">
         </div>
         <div class="field">
           <label for="restartText">Restart button text</label>
-          <input id="restartText" type="text" value="Restart Scenario">
+          <input id="restartText" type="text" placeholder="e.g. Restart Scenario">
         </div>
       </div>
 
@@ -122,45 +122,45 @@ hr{border:0;border-top:1px solid var(--line);margin:20px 0}
       <div class="result-editor">
         <div class="field">
           <label>Strong result title</label>
-          <input id="strongTitle" type="text" value="Strong performance">
+          <input id="strongTitle" type="text" placeholder="e.g. Strong performance">
         </div>
         <div class="field">
           <label>Strong result text</label>
-          <textarea id="strongText">Your decisions show a good understanding of the scenario and appropriate workplace response.</textarea>
+          <textarea id="strongText" placeholder="Describe what a strong outcome means for this scenario."></textarea>
         </div>
         <div class="field">
           <label>Strong result bullets (one per line)</label>
-          <textarea id="strongBullets">effective risk identification, appropriate control measures, safe incident response</textarea>
+          <textarea id="strongBullets" placeholder="Optional: add one point per line"></textarea>
         </div>
       </div>
 
       <div class="result-editor">
         <div class="field">
           <label>Mixed result title</label>
-          <input id="mixedTitle" type="text" value="Mixed outcome">
+          <input id="mixedTitle" type="text" placeholder="e.g. Mixed outcome">
         </div>
         <div class="field">
           <label>Mixed result text</label>
-          <textarea id="mixedText">You made several good decisions, however one or more choices introduced avoidable risk.</textarea>
+          <textarea id="mixedText" placeholder="Describe what a mixed outcome means for this scenario."></textarea>
         </div>
         <div class="field">
           <label>Mixed result bullets (one per line)</label>
-          <textarea id="mixedBullets">some appropriate decisions, areas requiring further consideration, potential for inconsistent practice</textarea>
+          <textarea id="mixedBullets" placeholder="Optional: add one point per line"></textarea>
         </div>
       </div>
 
       <div class="result-editor">
         <div class="field">
           <label>Weak result title</label>
-          <input id="weakTitle" type="text" value="High risk outcome">
+          <input id="weakTitle" type="text" placeholder="e.g. High risk outcome">
         </div>
         <div class="field">
           <label>Weak result text</label>
-          <textarea id="weakText">Multiple decisions did not align with the expected approach for this scenario.</textarea>
+          <textarea id="weakText" placeholder="Describe what a high-risk outcome means for this scenario."></textarea>
         </div>
         <div class="field">
           <label>Weak result bullets (one per line)</label>
-          <textarea id="weakBullets">increased risk, inappropriate controls\npotential negative consequences</textarea>
+          <textarea id="weakBullets" placeholder="Optional: add one point per line"></textarea>
         </div>
       </div>
 
@@ -196,27 +196,10 @@ const state = {
   openQuestion: 0,
   questions: [
     {
-      question: "A new vehicle cleaning product has been procured.\n\nThe Health & Safety Officer is completing a COSHH assessment.\n\nWhat document must they use to identify hazards and controls?",
+      question: "",
       answers: [
-        { text: "Safety Data Sheet (SDS)", correct: false, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
-        { text: "A shopping list from procurement", correct: false, severity: "significant", feedbackTitle: "Incorrect source used", feedbackText: "Using anything other than a Safety Data Sheet means hazard classification, PPE guidance and emergency controls may be missed.", bullets: "unsafe chemical handling\nincorrect PPE selection\nnon-compliant COSHH assessment" },
-        { text: "An email from a colleague guessing the risks", correct: false, severity: "significant", feedbackTitle: "Unreliable information", feedbackText: "Informal advice is not a suitable replacement for approved safety information when assessing hazardous substances.", bullets: "" }
-      ]
-    },
-    {
-      question: "The SDS identifies the product as corrosive.\n\nWhat should be the FIRST control action?",
-      answers: [
-        { text: "Select appropriate PPE and safe handling controls", correct: false, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
-        { text: "Allow staff to use it without changes", correct: false, severity: "critical", feedbackTitle: "Control failure risk", feedbackText: "Failing to apply appropriate controls would leave staff unprotected when handling a corrosive substance.", bullets: "chemical exposure\nworkplace injury\ninadequate COSHH controls" },
-        { text: "Assume low risk because it looks like water", correct: false, severity: "significant", feedbackTitle: "Risk underestimation", feedbackText: "The appearance of a substance does not indicate how hazardous it may be. Controls should be based on the available safety information.", bullets: "" }
-      ]
-    },
-    {
-      question: "During use, a staff member gets the chemical on their skin.\n\nWhat is the correct immediate response?",
-      answers: [
-        { text: "Follow first aid guidance and rinse the affected area immediately", correct: false, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
-        { text: "Wait until shift end before acting", correct: false, severity: "critical", feedbackTitle: "Delayed response", feedbackText: "Delaying first aid following chemical exposure can increase the severity of an injury.", bullets: "" },
-        { text: "Ignore it unless symptoms appear later", correct: false, severity: "critical", feedbackTitle: "Exposure ignored", feedbackText: "Chemical exposure should be dealt with immediately using the first aid guidance provided for that substance.", bullets: "" }
+        { text: "", correct: false, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" },
+        { text: "", correct: false, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" }
       ]
     }
   ]
@@ -256,7 +239,7 @@ function renderQuestions(){
       <div class="question-body">
         <div class="field" style="margin-top:14px">
           <label>Question text</label>
-          <textarea data-field="question" data-q="${qi}">${escapeHtml(q.question)}</textarea>
+          <textarea data-field="question" data-q="${qi}" placeholder="Enter the scenario question or decision point...">${escapeHtml(q.question)}</textarea>
         </div>
         <div class="answer-list" id="answers-${qi}"></div>
         <button class="secondary small" data-action="add-a" data-q="${qi}">+ Add answer</button>
@@ -275,7 +258,7 @@ function renderQuestions(){
         </div>
         <div class="field">
           <label>Answer text</label>
-          <input type="text" data-field="answer-text" data-q="${qi}" data-a="${ai}" value="${escapeHtml(a.text)}">
+          <input type="text" data-field="answer-text" data-q="${qi}" data-a="${ai}" value="${escapeHtml(a.text)}" placeholder="Enter an answer option...">
         </div>
         <label class="checkbox">
           <input type="checkbox" data-field="correct" data-q="${qi}" data-a="${ai}" ${a.correct ? 'checked' : ''}>
@@ -291,15 +274,15 @@ function renderQuestions(){
         </div>
         <div class="field">
           <label>Consequence title (optional)</label>
-          <input type="text" data-field="feedback-title" data-q="${qi}" data-a="${ai}" value="${escapeHtml(a.feedbackTitle)}">
+          <input type="text" data-field="feedback-title" data-q="${qi}" data-a="${ai}" value="${escapeHtml(a.feedbackTitle)}" placeholder="e.g. Delayed response">
         </div>
         <div class="field">
           <label>Consequence text (optional)</label>
-          <textarea data-field="feedback-text" data-q="${qi}" data-a="${ai}">${escapeHtml(a.feedbackText)}</textarea>
+          <textarea data-field="feedback-text" data-q="${qi}" data-a="${ai}" placeholder="Explain the consequence of this decision...">${escapeHtml(a.feedbackText)}</textarea>
         </div>
         <div class="field">
           <label>Consequence bullets (one per line, optional)</label>
-          <textarea data-field="bullets" data-q="${qi}" data-a="${ai}">${escapeHtml(a.bullets)}</textarea>
+          <textarea data-field="bullets" data-q="${qi}" data-a="${ai}" placeholder="Optional: add one point per line">${escapeHtml(a.bullets)}</textarea>
         </div>
       `;
       aWrap.appendChild(ac);
@@ -496,7 +479,6 @@ document.getElementById('copyCode').addEventListener('click', async () => {
 });
 
 renderQuestions();
-refreshPreview();
 </script>
 </body>
 </html>
