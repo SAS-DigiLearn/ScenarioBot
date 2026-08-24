@@ -93,7 +93,7 @@ hr{border:0;border-top:1px solid var(--line);margin:20px 0}
         </div>
         <div class="field">
           <label for="restartText">Restart button text</label>
-          <input id="restartText" type="text" placeholder="e.g. Restart COSHH Scenario">
+          <input id="restartText" type="text" placeholder="e.g. Restart Scenario">
         </div>
       </div>
 
@@ -104,7 +104,7 @@ hr{border:0;border-top:1px solid var(--line);margin:20px 0}
         <button class="primary small" id="addQuestion">+ Add question</button>
       </div>
        <div class="panel-body">
-      <div class="notice"><strong>NOTE:</strong> Results are based on both overall performance and the severity of decisions. A single critical mistake can trigger a high-risk outcome.</div>
+      <div class="notice"><strong>NOTE:</strong> Results are based on whether decisions are correct and how much impact each decision has on the scenario. An incorrect critical-impact decision can trigger a high-risk outcome.</div>
       <div id="questions"></div>
 
       <hr>
@@ -222,7 +222,7 @@ function renderQuestions(){
   state.questions.forEach((q, qi) => {
     const card = document.createElement('div');
     card.className = 'question-card' + (state.openQuestion === qi ? ' open' : '');
-    const summary = (q.question || '').replace(/\s+/g,' ').trim();
+    const summary = (q.question || 'Untitled question').replace(/\s+/g,' ').trim();
     card.innerHTML = `
       <div class="question-head">
         <button class="question-toggle" type="button" data-action="toggle-q" data-q="${qi}" aria-expanded="${state.openQuestion === qi}">
@@ -265,23 +265,23 @@ function renderQuestions(){
           Correct answer
         </label>
         <div class="field" style="margin-top:10px">
-          <label>Consequence severity</label>
-          <select data-field="severity" data-q="${qi}" data-a="${ai}" ${a.correct ? 'disabled' : ''}>
-            <option value="minor" ${a.severity === 'minor' ? 'selected' : ''}>Minor</option>
-            <option value="significant" ${a.severity === 'significant' ? 'selected' : ''}>Significant</option>
-            <option value="critical" ${a.severity === 'critical' ? 'selected' : ''}>Critical</option>
+          <label>Decision impact</label>
+          <select data-field="severity" data-q="${qi}" data-a="${ai}">
+            <option value="minor" ${a.severity === 'minor' ? 'selected' : ''}>Low impact</option>
+            <option value="significant" ${a.severity === 'significant' ? 'selected' : ''}>Significant impact</option>
+            <option value="critical" ${a.severity === 'critical' ? 'selected' : ''}>Critical impact</option>
           </select>
         </div>
         <div class="field">
-          <label>Consequence title (optional)</label>
+          <label>Decision feedback title (optional)</label>
           <input type="text" data-field="feedback-title" data-q="${qi}" data-a="${ai}" value="${escapeHtml(a.feedbackTitle)}" placeholder="e.g. Delayed response">
         </div>
         <div class="field">
-          <label>Consequence text (optional)</label>
-          <textarea data-field="feedback-text" data-q="${qi}" data-a="${ai}" placeholder="Explain the consequence of this decision...">${escapeHtml(a.feedbackText)}</textarea>
+          <label>Decision feedback (optional)</label>
+          <textarea data-field="feedback-text" data-q="${qi}" data-a="${ai}" placeholder="Explain the impact or feedback for this decision...">${escapeHtml(a.feedbackText)}</textarea>
         </div>
         <div class="field">
-          <label>Consequence bullets (one per line, optional)</label>
+          <label>Key points (one per line, optional)</label>
           <textarea data-field="bullets" data-q="${qi}" data-a="${ai}" placeholder="Optional: add one point per line">${escapeHtml(a.bullets)}</textarea>
         </div>
       `;
@@ -365,7 +365,7 @@ function getScenario(){
     questions: state.questions.map(q => ({
       question: q.question,
       answers: q.answers.map(a => {
-        const out = {text:a.text, correct:!!a.correct, severity:a.correct ? null : (a.severity || 'minor')};
+        const out = {text:a.text, correct:!!a.correct, impact:a.severity || 'minor'};
         if (a.feedbackTitle || a.feedbackText || a.bullets.trim()) {
           out.feedback = {
             icon: a.correct ? '✅' : '⚠️',
@@ -431,14 +431,14 @@ function updateProgress(){const total=scenario.questions.length;if(step>=total){
 function appendMessage(content,type){const div=document.createElement("div");div.className="message "+type;div.textContent=content;messages.appendChild(div);div.scrollIntoView({behavior:"smooth",block:"nearest"});}
 function showTyping(){const typing=document.createElement("div");typing.className="message bot typing";typing.textContent=scenario.typingText||"Typing...";messages.appendChild(typing);return new Promise(resolve=>setTimeout(()=>{typing.remove();resolve();},scenario.typingDelay||0));}
 async function askQuestion(){controls.innerHTML="";updateProgress();if(step>=scenario.questions.length){await showFeedback();return;}await showTyping();const current=scenario.questions[step];appendMessage(current.question,"bot");current.answers.forEach(answer=>{const button=document.createElement("button");button.type="button";button.textContent=answer.text;button.addEventListener("click",()=>selectAnswer(answer));controls.appendChild(button);});}
-async function selectAnswer(answer){const current=scenario.questions[step];appendMessage(answer.text,"user");answers.push({question:current.question,selected:answer.text,correct:Boolean(answer.correct),severity:answer.correct ? null : (answer.severity || "minor"),feedback:answer.feedback||null});step++;await askQuestion();}
+async function selectAnswer(answer){const current=scenario.questions[step];appendMessage(answer.text,"user");answers.push({question:current.question,selected:answer.text,correct:Boolean(answer.correct),impact:answer.impact || "minor",feedback:answer.feedback||null});step++;await askQuestion();}
 function calculateScore(){if(!answers.length)return 0;return answers.filter(a=>a.correct).length/answers.length;}
 function getDecisionSummary(){
   return {
     score: calculateScore(),
-    minor: answers.filter(a=>!a.correct && a.severity==="minor").length,
-    significant: answers.filter(a=>!a.correct && a.severity==="significant").length,
-    critical: answers.filter(a=>!a.correct && a.severity==="critical").length
+    minor: answers.filter(a=>!a.correct && a.impact==="minor").length,
+    significant: answers.filter(a=>!a.correct && a.impact==="significant").length,
+    critical: answers.filter(a=>!a.correct && a.impact==="critical").length
   };
 }
 function getResult(){
