@@ -172,6 +172,7 @@ hr{border:0;border-top:1px solid var(--line);margin:20px 0}
         <button class="secondary" id="refreshPreview">Update Preview</button>
         <button class="primary" id="generateCode">Generate Rise Code</button>
         <button class="secondary" id="copyCode">Copy Code</button>
+        <button class="danger" id="resetScenario">Reset Scenario</button>
       </div>
 
       <div class="generator">
@@ -192,9 +193,10 @@ hr{border:0;border-top:1px solid var(--line);margin:20px 0}
 </div>
 
 <script>
-const state = {
-  openQuestion: 0,
-  questions: [
+const STORAGE_KEY = 'scenarioBotBuilderDraft_v1';
+
+function createBlankQuestions(){
+  return [
     {
       question: "",
       answers: [
@@ -202,8 +204,95 @@ const state = {
         { text: "", correct: false, severity: "minor", feedbackTitle: "", feedbackText: "", bullets: "" }
       ]
     }
-  ]
+  ];
+}
+
+const state = {
+  openQuestion: 0,
+  questions: createBlankQuestions()
 };
+
+function getBuilderFields(){
+  return {
+    organisation: document.getElementById('organisation').value,
+    title: document.getElementById('title').value,
+    resultsHeading: document.getElementById('resultsHeading').value,
+    restartText: document.getElementById('restartText').value,
+    strongTitle: document.getElementById('strongTitle').value,
+    strongText: document.getElementById('strongText').value,
+    strongBullets: document.getElementById('strongBullets').value,
+    mixedTitle: document.getElementById('mixedTitle').value,
+    mixedText: document.getElementById('mixedText').value,
+    mixedBullets: document.getElementById('mixedBullets').value,
+    weakTitle: document.getElementById('weakTitle').value,
+    weakText: document.getElementById('weakText').value,
+    weakBullets: document.getElementById('weakBullets').value
+  };
+}
+
+function saveDraft(){
+  try {
+    const draft = {
+      fields: getBuilderFields(),
+      questions: state.questions
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+  } catch (err) {
+    console.warn('Scenario draft could not be saved.', err);
+  }
+}
+
+function restoreDraft(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+
+    const draft = JSON.parse(raw);
+    if (!draft || typeof draft !== 'object') return false;
+
+    if (draft.fields && typeof draft.fields === 'object') {
+      Object.entries(draft.fields).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = value ?? '';
+      });
+    }
+
+    if (Array.isArray(draft.questions) && draft.questions.length) {
+      state.questions = draft.questions;
+    }
+
+    state.openQuestion = 0;
+    return true;
+  } catch (err) {
+    console.warn('Saved scenario draft could not be restored.', err);
+    return false;
+  }
+}
+
+function resetBuilder(){
+  localStorage.removeItem(STORAGE_KEY);
+
+  [
+    'organisation','title','resultsHeading','restartText',
+    'strongTitle','strongText','strongBullets',
+    'mixedTitle','mixedText','mixedBullets',
+    'weakTitle','weakText','weakBullets'
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
+  state.questions = createBlankQuestions();
+  state.openQuestion = 0;
+
+  performanceCard.classList.remove('open');
+  performanceToggle.setAttribute('aria-expanded', 'false');
+
+  document.getElementById('codeOutput').value = '';
+  document.getElementById('preview').srcdoc = '';
+
+  renderQuestions();
+}
 
 const qWrap = document.getElementById('questions');
 const performanceCard = document.getElementById('performanceCard');
@@ -306,6 +395,7 @@ qWrap.addEventListener('input', e => {
     if (f === 'correct') a.correct = t.checked;
     if (f === 'severity') a.severity = t.value;
   }
+  saveDraft();
 });
 qWrap.addEventListener('change', e => e.target.dispatchEvent(new Event('input',{bubbles:true})));
 
@@ -339,6 +429,7 @@ qWrap.addEventListener('click', e => {
     state.openQuestion = qi + 1;
   }
   renderQuestions();
+  saveDraft();
 });
 
 document.getElementById('addQuestion').addEventListener('click', () => {
@@ -348,6 +439,17 @@ document.getElementById('addQuestion').addEventListener('click', () => {
   ]});
   state.openQuestion = state.questions.length - 1;
   renderQuestions();
+  saveDraft();
+});
+
+document.querySelectorAll(
+  '#organisation, #title, #resultsHeading, #restartText, ' +
+  '#strongTitle, #strongText, #strongBullets, ' +
+  '#mixedTitle, #mixedText, #mixedBullets, ' +
+  '#weakTitle, #weakText, #weakBullets'
+).forEach(el => {
+  el.addEventListener('input', saveDraft);
+  el.addEventListener('change', saveDraft);
 });
 
 function linesToArray(text){
@@ -461,6 +563,10 @@ function refreshPreview(){
 }
 
 document.getElementById('refreshPreview').addEventListener('click', refreshPreview);
+document.getElementById('resetScenario').addEventListener('click', () => {
+  const confirmed = window.confirm('Reset this scenario? This will permanently clear the saved draft from this browser.');
+  if (confirmed) resetBuilder();
+});
 document.getElementById('generateCode').addEventListener('click', () => {
   const code = makeBotCode(getScenario());
   document.getElementById('codeOutput').value = code;
@@ -478,6 +584,7 @@ document.getElementById('copyCode').addEventListener('click', async () => {
   }
 });
 
+restoreDraft();
 renderQuestions();
 </script>
 </body>
