@@ -97,6 +97,10 @@ hr{border:0;border-top:1px solid var(--line);margin:20px 0}
         </div>
       </div>
 
+      <div class="field">
+        <label for="scenarioIntroduction">Scenario introduction</label>
+        <textarea id="scenarioIntroduction" placeholder="Introduce the scenario, context or learner's role before the first question..."></textarea>
+      </div>
 
       <hr>
       <div class="question-head">
@@ -217,6 +221,7 @@ function getBuilderFields(){
     title: document.getElementById('title').value,
     resultsHeading: document.getElementById('resultsHeading').value,
     restartText: document.getElementById('restartText').value,
+    scenarioIntroduction: document.getElementById('scenarioIntroduction').value,
     strongTitle: document.getElementById('strongTitle').value,
     strongText: document.getElementById('strongText').value,
     strongBullets: document.getElementById('strongBullets').value,
@@ -272,7 +277,7 @@ function resetBuilder(){
   localStorage.removeItem(STORAGE_KEY);
 
   [
-    'organisation','title','resultsHeading','restartText',
+    'organisation','title','resultsHeading','restartText','scenarioIntroduction',
     'strongTitle','strongText','strongBullets',
     'mixedTitle','mixedText','mixedBullets',
     'weakTitle','weakText','weakBullets'
@@ -441,7 +446,7 @@ document.getElementById('addQuestion').addEventListener('click', () => {
 });
 
 document.querySelectorAll(
-  '#organisation, #title, #resultsHeading, #restartText, ' +
+  '#organisation, #title, #resultsHeading, #restartText, #scenarioIntroduction, ' +
   '#strongTitle, #strongText, #strongBullets, ' +
   '#mixedTitle, #mixedText, #mixedBullets, ' +
   '#weakTitle, #weakText, #weakBullets'
@@ -459,6 +464,7 @@ function getScenario(){
     organisation: document.getElementById('organisation').value.trim(),
     title: document.getElementById('title').value.trim(),
     resultsHeading: document.getElementById('resultsHeading').value.trim(),
+    introduction: document.getElementById('scenarioIntroduction').value.trim(),
     typingText: 'Typing...',
     typingDelay: 700,
     restartButtonText: document.getElementById('restartText').value.trim(),
@@ -491,6 +497,7 @@ return `<div id="chatbox">
   <div id="progressContainer"><div id="progressBar"></div></div>
   <div id="progressText"></div>
   <div id="sectionHeader" class="section-header"></div>
+  <div id="scenarioIntro" class="scenario-intro"></div>
   <div id="messages"></div>
   <div id="controls" class="buttons"></div>
 </div>
@@ -508,7 +515,9 @@ button:focus-visible{outline:3px solid #333;outline-offset:3px;}
 button:active{transform:scale(.98);}
 .typing{font-style:italic;color:#666;animation:blink .5s infinite;}
 @keyframes blink{50%{opacity:.3;}}
-.section-header{margin-bottom:12px;padding:10px;background:#fff;color:#555;font-size:26px;}
+.section-header{margin-bottom:4px;padding:10px 10px 4px;background:#fff;color:#555;font-size:26px;}
+.scenario-intro{padding:0 10px 16px;color:#555;font-size:16px;line-height:1.55;white-space:pre-line;}
+.scenario-intro:empty{display:none;}
 #progressContainer{width:100%;background:#e9ecef;border-radius:10px;overflow:hidden;margin-bottom:8px;}
 #progressBar{height:10px;width:0%;background:var(--scenario-brand);transition:.4s;}
 #progressText{text-align:right;font-size:13px;margin-bottom:10px;color:#555;}
@@ -525,8 +534,9 @@ button:active{transform:scale(.98);}
 document.addEventListener("DOMContentLoaded",function(){
 const scenario=${safe};
 let step=0,answers=[];
-const chatbox=document.getElementById("chatbox"),messages=document.getElementById("messages"),controls=document.getElementById("controls"),progressBar=document.getElementById("progressBar"),progressText=document.getElementById("progressText"),sectionHeader=document.getElementById("sectionHeader");
+const chatbox=document.getElementById("chatbox"),messages=document.getElementById("messages"),controls=document.getElementById("controls"),progressBar=document.getElementById("progressBar"),progressText=document.getElementById("progressText"),sectionHeader=document.getElementById("sectionHeader"),scenarioIntro=document.getElementById("scenarioIntro");
 function setScenarioHeading(){sectionHeader.textContent="";if(scenario.organisation){const strong=document.createElement("strong");strong.textContent=scenario.organisation;sectionHeader.appendChild(strong);sectionHeader.appendChild(document.createTextNode(" "+scenario.title));}else sectionHeader.textContent=scenario.title;}
+function setScenarioIntroduction(){scenarioIntro.textContent=scenario.introduction||"";}
 function updateProgress(){const total=scenario.questions.length;if(step>=total){progressBar.style.width="100%";progressText.textContent="Completed "+total+" of "+total;return;}progressBar.style.width=((step/total)*100)+"%";progressText.textContent="Question "+(step+1)+" of "+total;}
 function appendMessage(content,type){const div=document.createElement("div");div.className="message "+type;div.textContent=content;messages.appendChild(div);div.scrollIntoView({behavior:"smooth",block:"nearest"});}
 function showTyping(){const typing=document.createElement("div");typing.className="message bot typing";typing.textContent=scenario.typingText||"Typing...";messages.appendChild(typing);return new Promise(resolve=>setTimeout(()=>{typing.remove();resolve();},scenario.typingDelay||0));}
@@ -550,7 +560,7 @@ function getResult(){
 }
 function createBulletList(items){if(!items||!items.length)return null;const ul=document.createElement("ul");items.forEach(item=>{const li=document.createElement("li");li.textContent=item;ul.appendChild(li);});return ul;}
 async function showFeedback(){controls.innerHTML="";progressBar.style.width="100%";await showTyping();chatbox.innerHTML="";const screen=document.createElement("div");screen.className="feedback-screen";const fc=document.createElement("div");fc.className="feedback";const h=document.createElement("h3");h.textContent=scenario.resultsHeading||"Scenario Outcome Review";fc.appendChild(h);const sh=document.createElement("h4");sh.textContent="Your decisions";fc.appendChild(sh);answers.forEach((a,i)=>{const s=document.createElement("div");s.className="answer-summary";const st=document.createElement("strong");st.textContent="Question "+(i+1);const ch=document.createElement("div");ch.textContent="You chose: "+a.selected;s.appendChild(st);s.appendChild(document.createElement("br"));s.appendChild(ch);fc.appendChild(s);});const fbs=answers.filter(a=>a.feedback);if(fbs.length){const ch=document.createElement("h4");ch.textContent="Impact of your decisions";fc.appendChild(ch);fbs.forEach(a=>{const d=a.feedback,card=document.createElement("div");card.className="consequence-card";const t=document.createElement("strong");t.textContent=((d.icon||"")+" "+(d.title||"")).trim();card.appendChild(t);if(d.text){const p=document.createElement("p");p.textContent=d.text;card.appendChild(p);}const list=createBulletList(d.bullets);if(list)card.appendChild(list);fc.appendChild(card);});}const result=getResult(),rc=document.createElement("div");rc.className="result-card";const rt=document.createElement("strong");rt.textContent=((result.icon||"")+" "+(result.title||"")).trim();rc.appendChild(rt);if(result.text){const p=document.createElement("p");p.textContent=result.text;rc.appendChild(p);}const rl=createBulletList(result.bullets);if(rl)rc.appendChild(rl);fc.appendChild(rc);const restart=document.createElement("button");restart.type="button";restart.className="restart-button";restart.textContent=scenario.restartButtonText||"Restart Scenario";restart.addEventListener("click",()=>location.reload());screen.appendChild(fc);screen.appendChild(restart);chatbox.appendChild(screen);}
-setScenarioHeading();askQuestion();
+setScenarioHeading();setScenarioIntroduction();askQuestion();
 });
 <\/script>`;
 }
